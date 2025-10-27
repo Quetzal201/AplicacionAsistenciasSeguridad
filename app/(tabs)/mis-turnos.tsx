@@ -101,9 +101,9 @@ export default function MisTurnosScreen() {
   if (role !== 'guardia') {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-        <Text style={{ textAlign: 'center' }}>Esta vista es solo para guardias.</Text>
-        <TouchableOpacity style={{ marginTop: 16, padding: 12, backgroundColor: '#2563eb', borderRadius: 8 }} onPress={() => router.replace('/(tabs)')}>
-          <Text style={{ color: '#fff' }}>Volver</Text>
+        <Text style={{ fontSize: 16, textAlign: 'center' }}>Esta vista es solo para guardias.</Text>
+        <TouchableOpacity style={{ marginTop: 16, padding: 12, backgroundColor: '#2563eb', borderRadius: 8 }} onPress={() => router.replace('/(tabs)/usuarios' as any)}>
+          <Text style={{ color: '#fff' }}>Ir a Usuarios</Text>
         </TouchableOpacity>
       </View>
     );

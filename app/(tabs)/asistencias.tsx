@@ -120,7 +120,7 @@ export default function AsistenciasScreen() {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <Text style={{ fontSize: 16, textAlign: 'center' }}>Esta vista es solo para administradores.</Text>
-        <TouchableOpacity style={{ marginTop: 16, padding: 12, backgroundColor: '#2563eb', borderRadius: 8 }} onPress={() => router.replace('/(tabs)/mis-turnos')}>
+        <TouchableOpacity style={{ marginTop: 16, padding: 12, backgroundColor: '#2563eb', borderRadius: 8 }} onPress={() => router.replace('/(tabs)/mis-turnos' as any)}>
           <Text style={{ color: '#fff' }}>Ir a Mis turnos</Text>
         </TouchableOpacity>
       </View>
