@@ -34,14 +34,8 @@ export default function LoginScreen() {
         setSuccessVisible(true);
         setTimeout(() => {
           setSuccessVisible(false);
-          // Redirigir según rol
-          if (userData.rol === 'admin') {
-            router.replace('/(tabs)/usuarios');
-          } else if (userData.rol === 'guardia') {
-            router.replace('/(tabs)/mis-turnos');
-          } else {
-            router.replace('/login');
-          }
+          // Redirigir a tabs, el layout manejará qué mostrar según rol
+          router.replace('/(tabs)/usuarios' as any);
         }, 1200);
       } else {
         throw new Error('No se pudo obtener información del usuario');

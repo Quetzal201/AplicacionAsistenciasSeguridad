@@ -80,7 +80,7 @@ export default function TabLayout() {
         name="usuarios" 
         options={{ 
           title: 'Usuarios',
-          href: isAdmin ? '/usuarios' : null,
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />
         }} 
       />
@@ -88,7 +88,7 @@ export default function TabLayout() {
         name="turnos" 
         options={{ 
           title: 'Turnos',
-          href: isAdmin ? '/turnos' : null,
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />
         }} 
       />
@@ -96,7 +96,7 @@ export default function TabLayout() {
         name="asistencias" 
         options={{ 
           title: 'Asistencias',
-          href: isAdmin ? '/asistencias' : null,
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color }) => <TabBarIcon name="check-circle" color={color} />
         }} 
       />
@@ -104,7 +104,7 @@ export default function TabLayout() {
         name="mis-turnos" 
         options={{ 
           title: 'Mis turnos',
-          href: isGuardia ? '/mis-turnos' : null,
+          href: isGuardia ? undefined : null,
           tabBarIcon: ({ color }) => <TabBarIcon name="list-ul" color={color} />
         }} 
       />
