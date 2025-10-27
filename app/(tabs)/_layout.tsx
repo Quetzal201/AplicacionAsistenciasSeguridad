@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
+import { Link, Tabs, useRouter } from 'expo-router';
 import { Pressable } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
+
+const API_BASE = 'http://localhost:3000';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -17,6 +21,38 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) { setRole(null); setLoading(false); return; }
+        const t = await user.getIdToken();
+        const res = await fetch(`${API_BASE}/usuarios/${user.uid}`, { headers: { Authorization: `Bearer ${t}` } });
+        if (!res.ok) throw new Error('rol');
+        const me = await res.json();
+        setRole(me?.rol || null);
+      } catch {
+        setRole(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) {
+    return (
+      <Tabs screenOptions={{ tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint, headerShown: useClientOnlyValue(false, true) }}>
+        <Tabs.Screen name="index" options={{ href: null }} />
+      </Tabs>
+    );
+  }
+
+  const isAdmin = role === 'admin';
+  const isGuardia = role === 'guardia';
 
   return (
     <Tabs
@@ -25,35 +61,37 @@ export default function TabLayout() {
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
+        headerRight: () => (
+          <Pressable
+            onPress={async () => { try { await signOut(auth); router.replace('/login'); } catch {} }}
+            style={{ marginRight: 12 }}
+          >
+            {({ pressed }) => (
+              <FontAwesome
+                name="sign-out"
+                size={22}
+                color={Colors[colorScheme ?? 'light'].text}
+                style={{ opacity: pressed ? 0.5 : 1 }}
+              />
+            )}
+          </Pressable>
+        ),
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
+      {/* Ocultar pestañas por defecto */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+      <Tabs.Screen name="two" options={{ href: null }} />
+
+      {isAdmin && (
+        <>
+          <Tabs.Screen name="usuarios" options={{ title: 'Usuarios', tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} /> }} />
+          <Tabs.Screen name="turnos" options={{ title: 'Turnos', tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} /> }} />
+          <Tabs.Screen name="asistencias" options={{ title: 'Asistencias', tabBarIcon: ({ color }) => <TabBarIcon name="check" color={color} /> }} />
+        </>
+      )}
+
+      {isGuardia && (
+        <Tabs.Screen name="asistencias" options={{ title: 'Asistencias', tabBarIcon: ({ color }) => <TabBarIcon name="check" color={color} /> }} />
+      )}
     </Tabs>
   );
 }

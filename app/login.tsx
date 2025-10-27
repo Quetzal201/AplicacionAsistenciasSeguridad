@@ -24,7 +24,7 @@ export default function LoginScreen() {
       setSuccessVisible(true);
       setTimeout(() => {
         setSuccessVisible(false);
-        router.replace('/(tabs)');
+        router.replace('/(tabs)/usuarios');
       }, 1200);
     } catch (e: any) {
       setError(e?.message || 'No se pudo iniciar sesión.');
