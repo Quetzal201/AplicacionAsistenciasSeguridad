@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, TouchableOpacity, Alert, FlatList } from
 import { useRouter } from 'expo-router';
 import { auth } from '../../lib/firebase';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://apiantonioasistencias.onrender.com';
 
 type Turno = { id: string; nombre: string; horaInicio: string; horaFin: string; usuarioId: string; fecha: string };
 

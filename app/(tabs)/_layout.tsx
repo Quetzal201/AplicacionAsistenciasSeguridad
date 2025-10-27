@@ -9,7 +9,7 @@ import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://apiantonioasistencias.onrender.com';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -57,9 +57,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
+        tabBarActiveTintColor: '#2563eb',
+        tabBarInactiveTintColor: '#000',
         headerShown: useClientOnlyValue(false, true),
         headerRight: () => (
           <Pressable
@@ -70,28 +69,45 @@ export default function TabLayout() {
               <FontAwesome
                 name="sign-out"
                 size={22}
-                color={Colors[colorScheme ?? 'light'].text}
+                color="#000"
                 style={{ opacity: pressed ? 0.5 : 1 }}
               />
             )}
           </Pressable>
         ),
       }}>
-      {/* Ocultar pestañas por defecto */}
-      <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="two" options={{ href: null }} />
-
-      {isAdmin && (
-        <>
-          <Tabs.Screen name="usuarios" options={{ title: 'Usuarios', tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} /> }} />
-          <Tabs.Screen name="turnos" options={{ title: 'Turnos', tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} /> }} />
-          <Tabs.Screen name="asistencias" options={{ title: 'Asistencias', tabBarIcon: ({ color }) => <TabBarIcon name="check" color={color} /> }} />
-        </>
-      )}
-
-      {isGuardia && (
-        <Tabs.Screen name="asistencias" options={{ title: 'Asistencias', tabBarIcon: ({ color }) => <TabBarIcon name="check" color={color} /> }} />
-      )}
+      <Tabs.Screen 
+        name="usuarios" 
+        options={{ 
+          title: 'Usuarios',
+          href: isAdmin ? '/usuarios' : null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="turnos" 
+        options={{ 
+          title: 'Turnos',
+          href: isAdmin ? '/turnos' : null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="asistencias" 
+        options={{ 
+          title: 'Asistencias',
+          href: isAdmin ? '/asistencias' : null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="check-circle" color={color} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="mis-turnos" 
+        options={{ 
+          title: 'Mis turnos',
+          href: isGuardia ? '/mis-turnos' : null,
+          tabBarIcon: ({ color }) => <TabBarIcon name="list-ul" color={color} />
+        }} 
+      />
     </Tabs>
   );
 }

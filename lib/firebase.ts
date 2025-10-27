@@ -14,7 +14,8 @@ const firebaseConfig = {
 // Ensure app is initialized only once
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Minimal auth without persistence customization
+// Auth instance - Firebase automatically uses AsyncStorage for persistence in React Native
+// if @react-native-async-storage/async-storage is installed
 export const auth = getAuth(app);
 
 export default app;

@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Modal, TextInput, ActivityIndic
 import { useRouter } from 'expo-router';
 import { auth } from '../../lib/firebase';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://apiantonioasistencias.onrender.com';
 
 type Usuario = {
   id: string;

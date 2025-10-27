@@ -20,12 +20,32 @@ export default function LoginScreen() {
     }
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      setSuccessVisible(true);
-      setTimeout(() => {
-        setSuccessVisible(false);
-        router.replace('/(tabs)/usuarios');
-      }, 1200);
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const token = await userCredential.user.getIdToken();
+      
+      // Obtener rol del usuario
+      const API_BASE = 'https://apiantonioasistencias.onrender.com';
+      const res = await fetch(`${API_BASE}/usuarios/${userCredential.user.uid}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const userData = await res.json();
+        setSuccessVisible(true);
+        setTimeout(() => {
+          setSuccessVisible(false);
+          // Redirigir según rol
+          if (userData.rol === 'admin') {
+            router.replace('/(tabs)/usuarios');
+          } else if (userData.rol === 'guardia') {
+            router.replace('/(tabs)/mis-turnos');
+          } else {
+            router.replace('/login');
+          }
+        }, 1200);
+      } else {
+        throw new Error('No se pudo obtener información del usuario');
+      }
     } catch (e: any) {
       setError(e?.message || 'No se pudo iniciar sesión.');
     } finally {

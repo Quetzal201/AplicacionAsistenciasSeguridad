@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, TouchableOpacity, Alert, FlatList, TextI
 import { useRouter } from 'expo-router';
 import { auth } from '../../lib/firebase';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://apiantonioasistencias.onrender.com';
 
 type Usuario = {
   id: string;
@@ -23,7 +23,6 @@ export default function AsistenciasScreen() {
   type Asistencia = { id: string; usuarioId: string; turnoId: string; fecha: string; asistio: boolean };
   const [items, setItems] = useState<Asistencia[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [misTurnos, setMisTurnos] = useState<Turno[]>([]);
 
   // filtros
   const [fUsuarioId, setFUsuarioId] = useState('');
@@ -64,8 +63,6 @@ export default function AsistenciasScreen() {
         setRole(me.rol);
         if (me.rol === 'admin') {
           await Promise.all([loadUsuarios(t), loadAsistencias(t)]);
-        } else if (me.rol === 'guardia') {
-          await loadMisTurnos(t, user.uid);
         }
       } catch (e) {
         console.error(e);
@@ -119,58 +116,13 @@ export default function AsistenciasScreen() {
     );
   }
 
-  if (role === 'guardia') {
-    const marcarAsistencia = async (turno: Turno) => {
-      const uid = auth.currentUser?.uid;
-      if (!token || !uid) return;
-      try {
-        setSaving(true);
-        let res = await fetch(`${API_BASE}/asistencias`, {
-          method: 'POST', headers,
-          body: JSON.stringify({ usuarioId: uid, turnoId: turno.id, fecha: turno.fecha, asistio: true })
-        });
-        if (res.status === 409) {
-          const q = `?usuarioId=${encodeURIComponent(uid)}&fecha=${encodeURIComponent(turno.fecha)}`;
-          const list = await fetch(`${API_BASE}/asistencias${q}`, { headers });
-          if (list.ok) {
-            const items: { id: string; turnoId: string }[] = await list.json();
-            const found = items.find(i => i.turnoId === turno.id);
-            if (found) {
-              res = await fetch(`${API_BASE}/asistencias/${found.id}`, { method: 'PATCH', headers, body: JSON.stringify({ asistio: true }) });
-            }
-          }
-        }
-        if (!res.ok) throw new Error('No se pudo marcar asistencia');
-        Alert.alert('Listo', 'Se registró tu asistencia.');
-      } catch (e) {
-        Alert.alert('Error', 'No se pudo marcar asistencia');
-      } finally {
-        setSaving(false);
-      }
-    };
-
+  if (role !== 'admin') {
     return (
-      <View style={{ flex: 1 }}>
-        <FlatList
-          data={misTurnos}
-          keyExtractor={(i) => i.id}
-          contentContainerStyle={{ padding: 16 }}
-          ListEmptyComponent={() => (
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Text>No tienes turnos</Text>
-            </View>
-          )}
-          renderItem={({ item }) => (
-            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, marginBottom: 12 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600' }}>{item.nombre}</Text>
-              <Text style={{ marginTop: 4, color: '#555' }}>Fecha: {item.fecha}</Text>
-              <Text style={{ marginTop: 4, color: '#555' }}>Horario: {item.horaInicio} - {item.horaFin}</Text>
-              <TouchableOpacity disabled={saving} onPress={() => marcarAsistencia(item)} style={{ marginTop: 12, backgroundColor: '#16a34a', padding: 12, borderRadius: 8 }}>
-                <Text style={{ color: '#fff', textAlign: 'center' }}>{saving ? 'Guardando...' : 'Marcar asistencia'}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 16, textAlign: 'center' }}>Esta vista es solo para administradores.</Text>
+        <TouchableOpacity style={{ marginTop: 16, padding: 12, backgroundColor: '#2563eb', borderRadius: 8 }} onPress={() => router.replace('/(tabs)/mis-turnos')}>
+          <Text style={{ color: '#fff' }}>Ir a Mis turnos</Text>
+        </TouchableOpacity>
       </View>
     );
   }
