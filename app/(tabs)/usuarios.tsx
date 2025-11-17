@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { auth } from '../../lib/firebase';
+import * as Contacts from 'expo-contacts';
 
 const API_BASE = 'https://apiantonioasistencias.onrender.com';
 
@@ -103,11 +104,42 @@ export default function UsuariosScreen() {
   const [formPassword, setFormPassword] = useState('');
   const [formRol, setFormRol] = useState<'admin' | 'guardia'>('guardia');
 
+  const [contactsModalVisible, setContactsModalVisible] = useState(false);
+  const [contactsLoading, setContactsLoading] = useState(false);
+  const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
+
   const resetForm = () => {
     setFormNombre('');
     setFormEmail('');
     setFormPassword('');
     setFormRol('guardia');
+  };
+
+  const openContactsPicker = async () => {
+    try {
+      setContactsLoading(true);
+      const { status } = await Contacts.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso requerido', 'Debes otorgar permiso de contactos para poder seleccionarlos.');
+        return;
+      }
+
+      const { data } = await Contacts.getContactsAsync({
+        fields: [Contacts.Fields.Emails, Contacts.Fields.Name],
+      });
+
+      if (!data || data.length === 0) {
+        Alert.alert('Sin contactos', 'No se encontraron contactos en el dispositivo.');
+        return;
+      }
+
+      setContacts(data);
+      setContactsModalVisible(true);
+    } catch (e) {
+      Alert.alert('Error', 'No se pudieron cargar los contactos.');
+    } finally {
+      setContactsLoading(false);
+    }
   };
 
   const onCreate = async () => {
@@ -249,6 +281,13 @@ export default function UsuariosScreen() {
           <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 12, width: '88%' }}>
             <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12 }}>Agregar usuario</Text>
 
+            <TouchableOpacity
+              onPress={openContactsPicker}
+              style={{ marginBottom: 12, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, backgroundColor: '#e5e7eb' }}
+            >
+              <Text style={{ textAlign: 'center' }}>{contactsLoading ? 'Cargando contactos...' : 'Seleccionar desde contactos del teléfono'}</Text>
+            </TouchableOpacity>
+
             <Text style={{ marginBottom: 6 }}>Nombre</Text>
             <TextInput value={formNombre} onChangeText={setFormNombre} style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, marginBottom: 8 }} />
 
@@ -269,6 +308,48 @@ export default function UsuariosScreen() {
                 <Text style={{ color: '#fff', textAlign: 'center' }}>Cancelar</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal selector de contactos */}
+      <Modal
+        visible={contactsModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setContactsModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 12, width: '88%', maxHeight: '70%' }}>
+            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12 }}>Selecciona un contacto</Text>
+            <FlatList
+              data={contacts}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const email = item.emails && item.emails.length > 0 ? item.emails[0].email : '';
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setFormNombre(item.name || '');
+                      if (email) setFormEmail(email);
+                      setContactsModalVisible(false);
+                      setFormVisible(true);
+                    }}
+                    style={{ paddingVertical: 10 }}
+                  >
+                    <Text style={{ fontSize: 16 }}>{item.name || 'Sin nombre'}</Text>
+                    {!!email && <Text style={{ color: '#6b7280', marginTop: 2 }}>{email}</Text>}
+                  </TouchableOpacity>
+                );
+              }}
+              ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: '#eee' }} />}
+            />
+            <TouchableOpacity
+              onPress={() => setContactsModalVisible(false)}
+              style={{ marginTop: 12, padding: 10 }}
+            >
+              <Text style={{ textAlign: 'center' }}>Cerrar</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
